@@ -11,6 +11,6 @@ NIGEND,NAISSANCE,SEXE,AGE,STATUT,TYPE,Course,Natation,Rameur,Pompes,Tractions,Me
 
 Application aff_resultats.py exploite le fichier candidat_res.csv pour retourner un fichier resultats.csv.
 NIGEND,NAISSANCE,SEXE,AGE,STATUT,TYPE,Course,Natation,Rameur,Pompes,Tractions,Medecine-ball,Abdominaux,Gainage,Squats,R_Course,R_Natation,R_Rameur,R_Pompes,R_Tractions,R_Medecine-ball,R_Abdominaux,R_Gainage,R_Squats
-176454,07/05/1965,M,58,OG,True,860,-1,-1,30,-1,-1,-1,120,-1,20.0,-1,-1,19.5,-1,-1,-1,19.5,-1
+156354,07/05/1965,M,58,OG,True,860,-1,-1,30,-1,-1,-1,120,-1,20.0,-1,-1,19.5,-1,-1,-1,19.5,-1
 
 Lorsqu'il n'y a pas de résultat à conervtir le résultat de la conversion est -1
