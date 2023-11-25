@@ -1,5 +1,7 @@
 import string
 import bareme as br
+import sys
+
 # NIGEND,NAISSANCE,SEXE,AGE,STATUT,TYPE,Course,,Natation,Rameur,Pompes,Tractions,Medecine-ball,Abdominaux,Gainage,Squats
 def extraction_val(chaine,position_dep):
     res=""
@@ -56,7 +58,6 @@ def Exploite(candidat_epreu):
         else:
             candidat=candidat+","+str(conv)+","
         position_epreu+=1
-    print("Résultat ", candidat)
     return candidat
 
 def Convertit(source):
@@ -116,7 +117,6 @@ def extraction_val(chaine,position_dep):
     return res,i
 
 def ExploiteL(ligne):
-    print(ligne)
     cpt_virg=0
     candidat=""
     candidat_t=[] # Elément d'identification du candidat NIGEND, DDN, AGE, STATUT, ALTERNATIVES OUVERTES = True/False
@@ -163,7 +163,6 @@ def ExploiteL(ligne):
             if val=="":
                 resultats_t.append(-1) # Pas de valeur
             else:
-                print(val)
                 resultats_t.append(int(val))
             val=""
         else:
@@ -480,7 +479,6 @@ def Resultat(can_t,res_t):
     not_b=-2
     not_h=-2
     if res_t[8]!=-1:
-        print(res_t[8])
         # Choix du bareme sexe
         if can_t[2]=="M":
             epreuve=br.squats_H
@@ -490,14 +488,12 @@ def Resultat(can_t,res_t):
         for i in epreuve[col]:
             if res_t[8]>=i and i!=-1:
                 not_b=float(epreuve[0][epreuve[col].index(i)])
-                print(not_b)
                 break
             
         # Selection bareme haut
         for i in epreuve[col+1]:
             if res_t[8]>=i and i!=-1:
                 not_h=float(epreuve[0][epreuve[col+1].index(i)])
-                print(not_h)
                 break
         if not_b==-2:
             if not_h==-2:
@@ -510,8 +506,10 @@ def Resultat(can_t,res_t):
     else:
         ret.append(-1)
     return ret
-
-source="candid.csv"
+if len(sys.argv)==1:
+    source="candid.csv"
+else:
+    source=sys.argv[1]
 source=Convertit(source)
 f=open(source,"r")
 # Exploite le fichier transformé ligne par ligne
@@ -523,14 +521,11 @@ entete=entete+",R_Course,R_Natation,R_Rameur,R_Pompes,R_Tractions,R_Medecine-bal
 h.write(entete)
 for i in f:
     ligne=""
-    print(i)
     # Extrait les informations sur le candidat et ses résultats
     cand,res=ExploiteL(i)
-    print(cand)
-    print("\n",res)
     # Vérifie la validité de la ligne
     if Validite(res,cand[5]):
-        # Si la ligne est valide l'écrit dans le fichier resultats.csv
+        # Si la ligne est valide l'écrit dans le fichier RESULTAT_Conv_xxxxxx.csv
         ligne=List_string(cand)+","+List_string(res)+","+List_string(Resultat(cand,res))
         h.write(ligne)
 f.close()
