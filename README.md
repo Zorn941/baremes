@@ -14,3 +14,5 @@ NIGEND,NAISSANCE,SEXE,AGE,STATUT,TYPE,Course,Natation,Rameur,Pompes,Tractions,Me
 156354,07/05/1965,M,58,OG,True,860,-1,-1,30,-1,-1,-1,120,-1,20.0,-1,-1,19.5,-1,-1,-1,19.5,-1
 
 Lorsqu'il n'y a pas de résultat à conervtir le résultat de la conversion est -1
+
+Branch Unique : le processus est effectué en une seule passe
