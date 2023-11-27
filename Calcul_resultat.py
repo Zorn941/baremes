@@ -1,64 +1,49 @@
 import string
 import bareme as br
 import sys
+from datetime import date
 
 # NIGEND,NAISSANCE,SEXE,AGE,STATUT,TYPE,Course,,Natation,Rameur,Pompes,Tractions,Medecine-ball,Abdominaux,Gainage,Squats
-def extraction_val(chaine,position_dep):
-    res=""
-    i=position_dep+1
-    if chaine[i]==",":
-        return "",position_dep
-    while (chaine[i]!="," and (i<len(chaine)-1)):
-        res=res+chaine[i]
-        i+=1
-    return res,i
+# Suppression age et type d'épreuves ouvertes
+# NIGEND,NAISSANCE,SEXE,STATUT,Course,,Natation,Rameur,Pompes,Tractions,Medecine-ball,Abdominaux,Gainage,Squats
 
-def convertir(chaine):
-    minutes=""
-    secondes=""
+def Convertir(chaine):
     if "mn" in chaine:
-        chai=chaine.split('mn')
-        minutes=int(chai[0])
-        secondes=chai[1].strip('s')
-        if len(secondes)!=0:
-            secondes=int(secondes)
+        mn,s=chaine.split("mn")
+        mn=int(mn)
+        if s!="":
+            s=int(s[:-1])
         else:
-            secondes=0
+            s=0
     elif "s" in chaine:
-        secondes=int(chaine.strip('s'))
-    elif len(chaine)==0:
-        return -1
-    else:
-        return int(chaine)
-    if (minutes=="" and secondes==""):
-        perf=-1 # Pas de performance
-    elif minutes=="":
-        perf=secondes
-    else:
-        perf=minutes*60+secondes
+        mn=0
+        s=int(chaine[:-1])
+    res=mn*60+s
+    return res
+
     return perf
 
-def Exploite(candidat_epreu):
-    cpt_virg=0
-    candidat=""
-    position_epreu=-1
-    for j in candidat_epreu:
-        if j==",":
-            cpt_virg+=1
-        candidat+=j
-        position_epreu+=1
-        if cpt_virg==6:
-            candidat=candidat[:-1]
-            break
-    while position_epreu<len(candidat_epreu)-1:
-        res,position_epreu=extraction_val(candidat_epreu, position_epreu)
-        conv=convertir(res)
-        if conv==-1:
-            candidat=candidat+","
-        else:
-            candidat=candidat+","+str(conv)+","
-        position_epreu+=1
-    return candidat
+def Exploite(candidat_epreu): # Convertit en seconde les épreuves de temps et ajoute -1 lorsqu'il n'y a pas de résultat renvoi un string
+    candidat=candidat_epreu.split(",")
+    print(candidat)
+    i=0
+    while i<len(candidat):
+        if candidat[i]=="" or candidat[i]=="\n":
+            candidat[i]=-1
+        i+=1
+    i=4
+    for i in range(4,12):
+        if isinstance(candidat[i],str):
+            if ("s" in candidat[i] or "mn" in candidat[i]):
+                candidat[i]=Convertir(candidat[i])
+            else:
+                candidat[i]=int(candidat[i])
+    print(candidat)
+    lcandidat=""
+    for i in candidat:
+        lcandidat=lcandidat+str(i)+","
+    lcandidat=lcandidat[:-1]
+    return lcandidat
 
 def Convertit(source):
     f=open(source,"r")
@@ -117,11 +102,7 @@ def extraction_val(chaine,position_dep):
     return res,i
 
 def ExploiteL(ligne):
-    cpt_virg=0
-    candidat=""
-    candidat_t=[] # Elément d'identification du candidat NIGEND, DDN, AGE, STATUT, ALTERNATIVES OUVERTES = True/False
-    resultats=""
-    resultats_t=[] # Résultats des épreuves -1 si vide pour distinguer du 0 
+    candidat=[] # Elément d'identification du candidat NIGEND, DDN, SEXE, STATUT
     # Exemple [860, -1, -1, 30, -1, -1, -1, 120, -1] 860s en course 30 tractions 120s de gainage
     # 0 course 
     # 1 natation
@@ -132,47 +113,35 @@ def ExploiteL(ligne):
     # 6 abdominaux 
     # 7 gainage 
     # 8 squats 
-    position_epreu=-1
-    for j in ligne:
-        if j==",":
-            cpt_virg+=1
-        candidat+=j
-        position_epreu+=1
-        if cpt_virg==6:
-            resultats=ligne[len(candidat)-1:]
-            resultats=resultats[1:]
-            candidat=candidat[:-1]
-            break
-    i=0
-    val=""
-    while i<len(candidat)-1:
-        if candidat[i]==",":
-            candidat_t.append(val)
-            val=""
-        else:
-            val+=candidat[i]
-        i+=1
-    candidat_t.append(val)
-    # Recodage en binaire alternatives
-    if candidat_t[5]=="Alternative":
-        candidat_t[5]=True
-    i=0
-    val=""
-    while i<len(resultats)-1:
-        if resultats[i]==",":
-            if val=="":
-                resultats_t.append(-1) # Pas de valeur
-            else:
-                resultats_t.append(int(val))
-            val=""
-        else:
-            val+=resultats[i]
-        i+=1
-    if val!="":
-        resultats_t.append(int(val))
-    if len(resultats_t)<10:
-        resultats_t.append(-1)
-    return candidat_t,resultats_t
+    candidat=ligne.split(",")
+    resultat=candidat[4:13]
+    for i in range(0,9):
+        resultat[i]=int(resultat[i])
+    candidat=candidat[0:4]
+    # Ajout de l'âge et de la possibilité des alternatives
+    candidat.append(Age(candidat[1]))
+    candidat.append(Alternative(candidat[4]))
+    return candidat,resultat
+
+def Age(ne):
+    j,m,a=Naissance(ne)
+    annee=date.today()
+    annee=int(annee.strftime("%Y"))
+    age=annee-a
+    if (age<18 and age<70):
+        print("Age invalide - personne à moins de 18 ou de plus de 70")
+        return -1
+    return age
+
+
+def Alternative(age):
+    alter=False
+    if age>=40:
+        alter=True
+    else:
+        if (can_t[4]=="OCTA" or can_t[4]=="CSTAGN"):
+            alter=True
+    return alter
 
 def Validite(res_t,alter):
     ecr=False
@@ -217,6 +186,19 @@ def Arrondi(note):
         res=int(note)+1
     return res
 
+def Naissance(ddn):
+    # Séparation par les /
+    datesplit=ddn.split('/')
+    jour=int(datesplit[0])
+    mois=int(datesplit[1])
+    an=int(datesplit[2])
+    if an<1000:
+        if (an>50 and an<100):
+            an=an+1900
+        else:
+            an=an+2000
+    return jour,mois,an      
+
 def Resultat(can_t,res_t):
     # Chargement des barèmes par sexe en 1 tableau 6 colonnes
     # Colonne 0: Notes 
@@ -225,13 +207,7 @@ def Resultat(can_t,res_t):
     # Colonne 3: 40-49
     # Colonne 4: 50-69
     # Colonne 5: +70
-
-    # Gestion de l'âge
-    age=int(can_t[3])
-    if (age<18 and age<70):
-        print("Age invalide - personne à moins de 18 ou de plus de 70")
-        return -1
-    basse=int(age/10)*10
+    basse=int(can_t[4]/10)*10
     if basse==10 or basse==20:
         col=1
     elif basse==30:
@@ -240,7 +216,8 @@ def Resultat(can_t,res_t):
         col=3
     else:
         col=4
-    coef=(age-basse)/10
+    coef=(can_t[4]-basse)/10
+
     # retour des resultats
     ret=[]
     # Calcul résultat course
@@ -521,9 +498,12 @@ entete=entete+",R_Course,R_Natation,R_Rameur,R_Pompes,R_Tractions,R_Medecine-bal
 h.write(entete)
 for i in f:
     ligne=""
+    print(i)
     # Extrait les informations sur le candidat et ses résultats
     cand,res=ExploiteL(i)
     # Vérifie la validité de la ligne
+    print(cand)
+    print(res)
     if Validite(res,cand[5]):
         # Si la ligne est valide l'écrit dans le fichier RESULTAT_Conv_xxxxxx.csv
         ligne=List_string(cand)+","+List_string(res)+","+List_string(Resultat(cand,res))
