@@ -25,7 +25,6 @@ def Convertir(chaine):
 
 def Exploite(candidat_epreu): # Convertit en seconde les épreuves de temps et ajoute -1 lorsqu'il n'y a pas de résultat renvoi un string
     candidat=candidat_epreu.split(",")
-    print(candidat)
     i=0
     while i<len(candidat):
         if candidat[i]=="" or candidat[i]=="\n":
@@ -38,7 +37,6 @@ def Exploite(candidat_epreu): # Convertit en seconde les épreuves de temps et a
                 candidat[i]=Convertir(candidat[i])
             else:
                 candidat[i]=int(candidat[i])
-    print(candidat)
     lcandidat=""
     for i in candidat:
         lcandidat=lcandidat+str(i)+","
@@ -50,6 +48,10 @@ def Convertit(source):
     resultat="Conv_"+source
     g=open(resultat,"w")
     entete=f.readline()
+    entete=entete.split(",")
+    entete.insert(4,"AGE")
+    entete.insert(5,"ALTERNATIVES")
+    entete=List_string(entete)
     g.write(entete)
     for i in f:
         g.write(Exploite(i))
@@ -507,6 +509,8 @@ for i in f:
     if Validite(res,cand[5]):
         # Si la ligne est valide l'écrit dans le fichier RESULTAT_Conv_xxxxxx.csv
         ligne=List_string(cand)+","+List_string(res)+","+List_string(Resultat(cand,res))
+        print(entete)
+        print(ligne)
         h.write(ligne)
 f.close()
 h.close()
