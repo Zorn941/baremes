@@ -54,7 +54,8 @@ def Convertit(source):
     entete=List_string(entete)
     g.write(entete)
     for i in f:
-        g.write(Exploite(i))
+        lec=Exploite(i)+"\n"
+        g.write(lec)
     f.close()
     g.close()
     return resultat
@@ -122,7 +123,7 @@ def ExploiteL(ligne):
     candidat=candidat[0:4]
     # Ajout de l'âge et de la possibilité des alternatives
     candidat.append(Age(candidat[1]))
-    candidat.append(Alternative(candidat[4]))
+    candidat.append(Alternative(candidat[3],candidat[4]))
     return candidat,resultat
 
 def Age(ne):
@@ -136,12 +137,12 @@ def Age(ne):
     return age
 
 
-def Alternative(age):
+def Alternative(statut,age):
     alter=False
     if age>=40:
         alter=True
     else:
-        if (can_t[4]=="OCTA" or can_t[4]=="CSTAGN"):
+        if (statut=="OCTA" or statut=="CSTAGN"):
             alter=True
     return alter
 
@@ -485,6 +486,27 @@ def Resultat(can_t,res_t):
     else:
         ret.append(-1)
     return ret
+
+def NGlobal(ele_candidat,resultats):
+    if ele_candidat[5]:
+        ecr=max(resultats[0],resultats[1],resultats[2])
+        cmg1=max(resultats[3],resultats[4],resultats[5])
+        cmg2=max(resultats[6],resultats[7])
+    else:
+        ecr=resultats[0]
+        cmg1=max(resultats[3],resultats[4])
+        cmg2=max(resultats[6],resultats[7])
+    if min(ecr,cmg1,cmg2)<5:
+        reussite=False
+        tot=-1
+    else:
+        tot=Arrondi((ecr+cmg1+cmg2)/3)
+        if tot>=10:
+            reussite=True
+        else:
+            reussite=False
+    return ecr,cmg1,cmg2,reussite,tot
+
 if len(sys.argv)==1:
     source="candid.csv"
 else:
@@ -496,8 +518,9 @@ entete=f.readline()
 cible="RESULTATS_"+source
 h=open(cible,"w")
 entete=entete[:-1]
-entete=entete+",R_Course,R_Natation,R_Rameur,R_Pompes,R_Tractions,R_Medecine-ball,R_Abdominaux,R_Gainage,R_Squats\n"
+entete=entete+",R_Course,R_Natation,R_Rameur,R_Pompes,R_Tractions,R_Medecine-ball,R_Abdominaux,R_Gainage,R_Squats,ECR,CMG1,CMG2,Réussite,TOTAL\n"
 h.write(entete)
+print(entete)
 for i in f:
     ligne=""
     print(i)
@@ -507,11 +530,14 @@ for i in f:
     print(cand)
     print(res)
     if Validite(res,cand[5]):
-        # Si la ligne est valide l'écrit dans le fichier RESULTAT_Conv_xxxxxx.csv
-        ligne=List_string(cand)+","+List_string(res)+","+List_string(Resultat(cand,res))
-        print(entete)
+        # Si la ligne est valide, il calcule et écrit les résultats dans le fichier RESULTAT_Conv_xxxxxx.csv
+        Nresultats=Resultat(cand,res)
+        ecr,cmg1,cmg2,reussite,tout=NGlobal(cand,Nresultats)
+        ligne=List_string(cand)+","+List_string(res)+","+List_string(Nresultats)+","+str(ecr)+","+str(cmg1)+","+str(cmg2)+","+str(reussite)+","+str(tout)+"\n"
         print(ligne)
         h.write(ligne)
+    else:
+        print("Résultat invalide:\n",ligne)
 f.close()
 h.close()
 
